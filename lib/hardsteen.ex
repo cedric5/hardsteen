@@ -1,26 +1,33 @@
 defmodule Hardsteen do
-  
   def start do
-      players = [
-      p1: Game.deal_initial(%{hand: [], deck: Game.create_deck, id: 0, health: 30}),
-      p2: Game.deal_initial(%{hand: [], deck: Game.create_deck, id: 1, health: 30}) 
+    players = [
+      p1: Game.create_player(%{hand: [], deck: Game.create_deck, name: :p1, health: 10}),
+      p2: Game.create_player(%{hand: [], deck: Game.create_deck, name: :p2, health: 10})
     ]
     game = %{players: players, turn: [:p1, :p2], state: :playing}
-    game = do_turn game
+    do_turn game, game.state
   end
 
-  def do_turn(game) do
-    IO.puts "----------------"
-    IO.puts inspect game.turn
-    IO.puts "player_1: #{inspect game.players[:p1]}"
-    IO.puts "player_2: #{inspect game.players[:p2]}" 
-    IO.puts "----------------"  
-    game = Game.do_turn game
-    game = Game.switch_turn game
-    case game.state do
-      :playing -> do_turn game
-      #:done   -> game.finish_game game
-    end
+  def do_turn(game, :playing) do
+    game.players
+    |> Keyword.values
+    |> Enum.map(&("#{&1.name}: ❤️ : #{&1.health} "))
+    |> print_status
+
+    game
+    |> Game.do_turn
+    |> Game.switch_turn
+    |> Game.check_state
+    |> do_turn(game.state)
+
+  end
+
+  def do_turn(_, :done) do
+    IO.puts "done!"
+  end
+
+  def print_status(health) do
+    IO.puts "-----------------------------"
+    IO.puts "status: #{health}"
   end
 end
-  

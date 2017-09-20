@@ -1,7 +1,7 @@
 defmodule Game do
   def create_deck do
-    deck = [0,0,1,1,2,2,2,3,3,3,3,4,4,4,5,5,6,6,7,8]  
-    Enum.shuffle deck   
+    deck = [0,0,1,1,2,2,2,3,3,3,3,4,4,4,5,5,6,6,7,8]
+    Enum.shuffle deck
   end
 
   def attacker(game) do
@@ -12,12 +12,12 @@ defmodule Game do
     Enum.at(game.turn, 1)
   end
 
-  def deal_initial(player) do
-    if length(player.hand) < 4 do
-      player = deal_card(player)
-      deal_initial(player) 
+  def create_player(player_stub) do
+    if length(player_stub.hand) < 3 do
+      player_stub = deal_card(player_stub)
+      create_player(player_stub)
     else
-      player
+      player_stub
     end
   end
 
@@ -30,13 +30,11 @@ defmodule Game do
 
   def do_turn(game) do
     attacker = deal_card game.players[attacker(game)]
-    IO.puts "Its the turn of: " <> inspect Enum.at game.turn,0
-    card = IO.gets "which card do you want to play?" |> String.strip
-    {card,_} = Integer.parse card
 
-    attacker = do_attack game.players[attacker(game)], card
+    card = ask_card(attacker)
+
+    attacker = do_attack attacker, card
     defender = do_damage game.players[defender(game)], card
-    attacker = deal_card attacker
 
     new_players = game.players
     |> Keyword.replace(attacker(game), attacker)
@@ -45,6 +43,13 @@ defmodule Game do
     Map.put(game, :players, new_players)
   end
 
+  def ask_card(player) do
+    IO.puts "Its the turn of: #{player.name}"
+    IO.puts "your hand contains: #{inspect player.hand}"
+    card = IO.gets "which card do you want to play? " |> String.trim
+    {card,_} = Integer.parse card
+    card
+  end
 
 
   def do_attack(player, card) do
@@ -61,6 +66,14 @@ defmodule Game do
     case game.turn do
       [:p1, :p2] -> Map.put(game, :turn, [:p2, :p1])
       [:p2, :p1] -> Map.put(game, :turn, [:p1, :p2])
+    end
+  end
+
+  def check_state(game) do
+    if game.players |> Keyword.values |> Enum.any?(&(&1.health <= 0)) do
+      Map.put(game, :state, :done)
+    else
+      Map.put(game, :state, :playing)
     end
   end
 end
