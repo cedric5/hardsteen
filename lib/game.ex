@@ -29,7 +29,8 @@ defmodule Game do
   end
 
   def do_turn(game) do
-    attacker = deal_card game.players[attacker(game)]    
+    attacker = deal_card game.players[attacker(game)]
+    IO.puts "Its the turn of: " <> inspect Enum.at game.turn,0
     card = IO.gets "which card do you want to play?" |> String.strip
     {card,_} = Integer.parse card
     
