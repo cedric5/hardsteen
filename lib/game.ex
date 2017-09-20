@@ -33,9 +33,10 @@ defmodule Game do
     IO.puts "Its the turn of: " <> inspect Enum.at game.turn,0
     card = IO.gets "which card do you want to play?" |> String.strip
     {card,_} = Integer.parse card
-    
+
     attacker = do_attack game.players[attacker(game)], card
     defender = do_damage game.players[defender(game)], card
+    attacker = deal_card attacker
 
     new_players = game.players
     |> Keyword.replace(attacker(game), attacker)
