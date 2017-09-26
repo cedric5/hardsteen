@@ -1,8 +1,8 @@
 defmodule Hardsteen do
   def start do
     players = [
-      p1: Game.create_player(%{hand: [], deck: Game.create_deck, name: :p1, health: 10}),
-      p2: Game.create_player(%{hand: [], deck: Game.create_deck, name: :p2, health: 10})
+      p1: Game.create_player(%{hand: [], deck: Game.create_deck, name: :p1, health: 10, mana: 0}),
+      p2: Game.create_player(%{hand: [], deck: Game.create_deck, name: :p2, health: 10, mana: 0})
     ]
     game = %{players: players, turn: [:p1, :p2], state: :playing}
     do_turn game, game.state

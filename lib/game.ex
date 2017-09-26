@@ -31,6 +31,7 @@ defmodule Game do
   def do_turn(game) do
     attacker = game.players[attacker(game)]
                |> deal_card
+               |> increase_mana
                |> print_status
 
     defender = game.players[defender(game)]
@@ -47,7 +48,12 @@ defmodule Game do
   def print_status(player) do
     IO.puts "Its the turn of: #{player.name}"
     IO.puts "your hand contains: #{inspect player.hand}"
+    IO.puts "you have #{player.mana} mana to spend this turn"
     player
+  end
+
+  def increase_mana(player) do
+    player |> Map.put(:mana, player.mana + 1)
   end
 
   def ask_card(player) do
@@ -60,7 +66,7 @@ defmodule Game do
   end
 
   def valid?(card, player) do
-    player.hand |> Enum.member?(card)
+    Enum.member?(player.hand, card) && card <= player.mana
   end
 
   def do_attack(player, card) do
