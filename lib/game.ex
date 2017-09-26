@@ -29,37 +29,54 @@ defmodule Game do
   end
 
   def do_turn(game) do
-    attacker = deal_card game.players[attacker(game)]
+    attacker = game.players[attacker(game)]
+               |> deal_card
+               |> print_status
+
+    defender = game.players[defender(game)]
 
     card = ask_card(attacker)
 
-    attacker = do_attack attacker, card
-    defender = do_damage game.players[defender(game)], card
-
     new_players = game.players
-    |> Keyword.replace(attacker(game), attacker)
-    |> Keyword.replace(defender(game), defender)
+    |> Keyword.replace(attacker(game), do_attack(attacker, card))
+    |> Keyword.replace(defender(game), do_damage(defender, card))
 
     Map.put(game, :players, new_players)
   end
 
-  def ask_card(player) do
+  def print_status(player) do
     IO.puts "Its the turn of: #{player.name}"
     IO.puts "your hand contains: #{inspect player.hand}"
-    card = IO.gets "which card do you want to play? " |> String.trim
-    {card,_} = Integer.parse card
-    card
+    player
   end
 
+  def ask_card(player) do
+    input = IO.gets("which card do you want to play? (-1 for none) ") |> Integer.parse
+    case input do
+      :error    -> ask_card(player)
+      {-1, _}   -> nil
+      {card, _} -> if(valid?(card, player), do: card, else: ask_card(player))
+    end
+  end
+
+  def valid?(card, player) do
+    player.hand |> Enum.member?(card)
+  end
 
   def do_attack(player, card) do
-    new_hand = List.delete(player.hand, card)
-    Map.put(player, :hand, new_hand)
+    if card == nil do
+      player
+    else
+      player |> Map.put(:hand, player.hand |> List.delete(card))
+    end
   end
 
   def do_damage(player, hit) do
-    new_health = player.health - hit
-    Map.put(player, :health, new_health)
+    if hit == nil do
+      player
+    else
+      player |> Map.put(:health, player.health - hit)
+    end
   end
 
   def switch_turn(game) do
@@ -70,10 +87,17 @@ defmodule Game do
   end
 
   def check_state(game) do
-    if game.players |> Keyword.values |> Enum.any?(&(&1.health <= 0)) do
-      Map.put(game, :state, :done)
+    if any_dead?(game.players) do
+      game |> Map.put(:state, :done)
     else
-      Map.put(game, :state, :playing)
+      game |> Map.put(:state, :playing)
     end
+  end
+
+  def any_dead?(players) do
+    players
+    |> Keyword.values
+    |> Enum.map(&(&1.health))
+    |> Enum.any?(&(&1 <= 0))
   end
 end

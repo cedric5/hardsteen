@@ -19,7 +19,6 @@ defmodule Hardsteen do
     |> Game.switch_turn
     |> Game.check_state
     |> do_turn(game.state)
-
   end
 
   def do_turn(_, :done) do
